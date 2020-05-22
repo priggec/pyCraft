@@ -107,7 +107,7 @@ def main():
         print("Message (%s): %s" % (
             chat_packet.field_string('position'), chat_packet.json_data))
 
-    # list serves as output message queue
+    # lists serves as output message queues
     outQueue = []
 
     # boolean to tell if we are running
@@ -120,10 +120,20 @@ def main():
             outQueue.append(text)
             time.sleep(0.1)
 
+    # helper function to insert into message queue
+    def insert_into_queue(message, player, globalFlag):
+        if globalFlag:
+            outQueue.append(message)
+        else:
+            outQueue.append('/msg ' + player + ' ' + message)
+            
+
     # helper function to handle commands
-    def process_message(message, player, playerId):
+    def process_message(message, player, playerId, globalFlag):
+        
         if message == '$whoami':
-            outQueue.append('You are ' + player + '!')
+            insert_into_queue('You are ' + player + '!', player, globalFlag)
+                
         if message == '$selling':
             try:
                 dealFile = open('deals.json', 'r')
@@ -132,17 +142,19 @@ def main():
                 items = []
                 for item in deals['selling']:
                     items.append(item['item'])
-                outQueue.append('Selling these items: ' + str(items))
+                insert_into_queue('Selling these items: ' + str(items), player, globalFlag)
             except:
-                outQueue.append('Sorry! Deals are not available at this time.')
+                insert_into_queue('Sorry! Deals are not available at this time.', player, globalFlag)
+                
         if message == '$buying':
             try:
                 dealFile = open('deals.json', 'r')
                 deals = json.loads(dealFile.read())
                 dealFile.close()
-                outQueue.append('Buying these items: ' + str(deals['buying']))
+                insert_into_queue('Buying these items: ' + str(deals['buying']), player, globalFlag)
             except:
-                outQueue.append('Sorry! Deals are not available at this time.')
+                insert_into_queue('Sorry! Deals are not available at this time.', player, globalFlag)
+                    
         if message == '$reps':
             try:
                 dealFile = open('deals.json', 'r')
@@ -150,9 +162,13 @@ def main():
                 dealFile.close()
                 outQueue.append('Representatives of Astara: ' + str(deals['representatives']))
             except:
-                outQueue.append('Sorry! Database is not available at this time.')
+                insert_into_queue('Sorry! Database is not available at this time.', player, globalFlag)
+                    
         if message == '$help':
-            outQueue.append('Hi! I\'m the Astaran Trade Bot. Minimum trade value is 1db. Here are some commands you can use: $selling, $buying, $price <item>, $whoami, $reps, $help')
+                insert_into_queue('Hi! I\'m the Astaran Trade Bot. Minimum trade value is 1db.' + \
+                                  ' Here are some commands you can use: $selling, $buying, $price <item>, ' + \
+                                  '$whoami, $reps, $help', player, globalFlag)
+            
         if message.startswith('$price '):
             try:
                 query = message[7:]
@@ -170,18 +186,20 @@ def main():
                     if name != '':
                         break;
                 if name == '' or price == '':
-                    outQueue.append('Sorry! No price listed for that item.')
+                    insert_into_queue('Sorry! No price listed for that item.', player, globalFlag)
                 else:
-                    outQueue.append('Astara sells ' + name + ' for ' + price)
+                    insert_into_queue('Astara sells ' + name + ' for ' + price, player, globalFlag)
             except:
-                outQueue.append('Sorry! No price listed for that item.')
+                insert_into_queue('Sorry! No price listed for that item.', player, globalFlag)
 
 
     # chat processing callback
     def process_chat(chat_packet):
-        if chat_packet.field_string('position') == 'CHAT':
-            print('Received CHAT packet')
+        position = chat_packet.field_string('position')
+        if position == 'CHAT' or position == 'SYSTEM':
             data = json.loads(chat_packet.json_data)
+                
+            # Global Chat
             if data['translate'] == 'chat.type.text':
                 # grab useful data from json
                 message = data['with'][1]
@@ -198,10 +216,30 @@ def main():
                 log.write(outStr + '\n')
                 log.close()
                 # process message
-                process_message(message, player, playerId)
+                process_message(message, player, playerId, True)
+                
+            # Private Chat
+            if data['translate'] == 'commands.message.display.incoming':
+                # grab useful data from json
+                message = data['with'][1]['text']
+                player = data['with'][0]['insertion']
+                hoverStr = data['with'][0]['hoverEvent']['value']['text']
+                start = hoverStr.index('id:\"') + 4
+                end = hoverStr.index('\",type:')
+                playerId = hoverStr[start:end]
+                # print chat message
+                outStr = playerId + ' (' + player + ') PRIVATE: ' + message
+                print(outStr)
+                # log message
+                log = open('log.txt', 'a')
+                log.write(outStr + '\n')
+                log.close()
+                # process message
+                process_message(message, player, playerId, False)
+                
 
-    #connection.register_packet_listener(
-    #    print_chat, clientbound.play.ChatMessagePacket)
+    connection.register_packet_listener(
+        print_chat, clientbound.play.ChatMessagePacket)
 
     # Register our chatbot logic
     connection.register_packet_listener(

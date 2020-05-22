@@ -60,6 +60,8 @@ docs/_build/
 # PyBuilder
 target/
 
+log.txt
+testServer/
 
 ### SublimeText ###
 # cache files for sublime text

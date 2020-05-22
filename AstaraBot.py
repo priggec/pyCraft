@@ -238,8 +238,9 @@ def main():
                 process_message(message, player, playerId, False)
                 
 
-    connection.register_packet_listener(
-        print_chat, clientbound.play.ChatMessagePacket)
+    # Register Debug callback
+    #connection.register_packet_listener(
+    #    print_chat, clientbound.play.ChatMessagePacket)
 
     # Register our chatbot logic
     connection.register_packet_listener(

@@ -1,0 +1,1 @@
+start ./AstaraBot.py -u AstaraBot -s localhost -o

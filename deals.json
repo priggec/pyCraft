@@ -1,0 +1,46 @@
+{
+	"buying": [
+		"Shulker shells"
+	],
+	"selling": [
+		{
+			"item": "Gold Blocks",
+			"alias": ["gold blocks", "gold", "gold block"],
+			"price": "4db per stack of blocks"
+		},
+		{
+			"item": "God Bows",
+			"alias": ["bow", "bows", "god bow", "god bows"],
+			"price": "2db apiece"
+		},
+		{
+			"item": "Elytras",
+			"alias": ["elytra", "elytras"],
+			"price": "4db apiece (enchanted)"
+		},
+		{
+			"item": "Cobblestone",
+			"alias": ["cobblestone", "cobble"],
+			"price": "1db a shulker"
+		},
+		{
+			"item": "Stone",
+			"alias": ["stone"],
+			"price": "2db a shulker"
+		},
+		{
+			"item": "Smooth Stone",
+			"alias": ["smooth stone"],
+			"price": "3db per shulker"
+		},
+		{
+			"item": "Shulker Box",
+			"alias": ["shulker box", "shulk", "shulker"],
+			"price": "2db per box"
+		}
+	],
+	"representatives": [
+		"Rheapr",
+		"David_M1A2"
+	]
+}
